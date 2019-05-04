@@ -17,4 +17,4 @@ Webproject for user login.
 ## Release info
 | Date | Description |
 |-|-|
-| 4 may 2019 | Added a password class |
+| 4 may 2019 | Added a password class and tests |
