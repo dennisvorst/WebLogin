@@ -16,7 +16,18 @@ class Password
 
 	function generatePassword() : string 
 	{
+		$list = $this->_specialChars . $this->_lowerCase . $this->_upperCase . $this->_digits;
+		$password = "";
 
+		while (!$this->isValid($password))
+		{
+			$password = "";
+			for ($i = 0; $i < $this->_length; $i++) {
+		        $n = rand(0, strlen($list)-1);
+		        $password .= $list[$n];
+		    }			
+		}
+		return $password;
 	}
 
 	function isValid(string $password) : bool

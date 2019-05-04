@@ -10,55 +10,71 @@ class TabTest extends TestCase
 		$this->assertTrue(class_exists("Password"));
 	}
 
-	public function testPasswordMustBeFilled(){
-		// kuddos to https://www.lastpass.com/nl/password-generator
+	public function testPasswordMustBeFilled()
+	{
 		$password = "";
 		$object = new Password();
 
 		$this->assertFalse($object->isValid($password));
 	}
 
-	public function testPasswordMustBeAtLeastTenCharactersLong(){
-		// kuddos to https://www.lastpass.com/nl/password-generator
+	public function testPasswordMustBeAtLeastTenCharactersLong()
+	{
 		$password = "WGq7&*4T";
 		$object = new Password();
 
 		$this->assertFalse($object->isValid($password));
 	}
 
-	public function testPasswordMustHaveDigit(){
-		// kuddos to https://www.lastpass.com/nl/password-generator
+	public function testPasswordMustHaveDigit()
+	{
 		$password = "WGq&*TDpXWGq&*";
 		$object = new Password();
 
 		$this->assertFalse($object->isValid($password));
 	}
-	public function testPasswordMustHaveLowercaseCharacter(){
+
+	public function testPasswordMustHaveLowercaseCharacter()
+{
 		$password = "WG7&*4T3DX&*4T3DX";
 		$object = new Password();
 
 		$this->assertFalse($object->isValid($password));
 	}
-	public function testPasswordMustHaveUppercaseCharacter(){
+
+	public function testPasswordMustHaveUppercaseCharacter()
+	{
 		$password = "q7&*43pq7&*43p";
 		$object = new Password();
 
 		$this->assertFalse($object->isValid($password));
 	}
-	public function testPasswordMustHaveGSpecialCharacter(){
+
+	public function testPasswordMustHaveGSpecialCharacter()
+	{
 		$password = "WGq74T3DpXWGq74T3DpX";
 		$object = new Password();
 
 		$this->assertFalse($object->isValid($password));
 	}
 
-	public function testPasswordIsCorrect(){
+	public function testPasswordIsCorrect()
+	{
 		// kuddos to https://www.lastpass.com/nl/password-generator
 		$password = "WGq7&*4T3DpX";
 		$object = new Password();
 
 		$this->assertTrue($object->isValid($password));
 	}
+
+	public function testGeneratePasswordThatIsVallid()
+	{
+		$object = new Password();
+		$password = $object->generatePassword();
+
+		$this->assertTrue($object->isValid($password));
+	}
+
 
 }
 ?>
