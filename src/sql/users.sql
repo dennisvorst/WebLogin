@@ -1,6 +1,34 @@
+DROP TABLE IF EXISTS passwords;
+DROP TABLE IF EXISTS logins;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE passwords (
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    startdate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE logins (
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    login DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+
+INSERT INTO `users` (`id`, `username`, `created_at`) VALUES (NULL, 'a4dvo', CURRENT_TIMESTAMP);
+INSERT INTO `passwords` (`id`, `user_id`, `password`, `startdate`, `created_at`) VALUES ('1', '1', 'Museum714', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

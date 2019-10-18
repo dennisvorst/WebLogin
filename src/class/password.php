@@ -9,9 +9,22 @@ class Password
 
 	private $_length = 10;
 
+	private $_hash = "";
+	private $_prefix = "$5$"; /* $5$ = SHA-256 and $6$ = SHA-512*/
+	private $_rounds = "rounds=10";
+	private $_salt = "MySaltyStringz";
+
+
+
+
 	function __construct()
 	{
+		$this->_hash = $this->_prefix . $this->_rounds . "$" . $this->_salt . "$";
+	}
 
+	function _getHash(string $password)
+	{
+		return crypt($password, $this->_hash);
 	}
 
 	function generatePassword() : string 
