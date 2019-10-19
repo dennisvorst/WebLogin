@@ -27,6 +27,11 @@ class Password
 		return crypt($password, $this->_hash);
 	}
 
+	function hashPassword(string $password) : string
+	{
+		return $this->_getHash($password);
+	}
+
 	function generatePassword() : string 
 	{
 		$list = $this->_specialChars . $this->_lowerCase . $this->_upperCase . $this->_digits;
