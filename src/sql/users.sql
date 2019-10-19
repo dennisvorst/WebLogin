@@ -22,13 +22,14 @@ CREATE TABLE passwords (
 CREATE TABLE logins (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    login DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    start DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_active DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	logged_out DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id)
         REFERENCES users(id)
         ON DELETE CASCADE
 );
-
 
 INSERT INTO `users` (`id`, `username`, `created_at`) VALUES (NULL, 'a4dvo', CURRENT_TIMESTAMP);
 INSERT INTO `passwords` (`id`, `user_id`, `password`, `startdate`, `created_at`) VALUES ('1', '1', 'Museum714', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

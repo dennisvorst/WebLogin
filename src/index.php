@@ -1,5 +1,20 @@
 <?php
 require_once "class/password.php";
+require_once "class/user.php";
+//require_once "class/login.php";
+require_once "class/account.php";
+
+/* try the doLogin */
+$object = new Account();
+$object->doLogin(1);
+
+/** create an account */
+$params = ["username" => "some_other_user", "password" => "some_password"];
+$object->doRegister($params);
+
+
+
+
 $pwObj = new password();
 
 if ("\$5\$rounds=1000\$MySaltyStringz\$MHUmMsMD6S9GuChvYbGDKcRnbas23oy6d2Mcs/1Y4bD" == $pwObj->_getHash("Museum714"))
@@ -27,7 +42,7 @@ echo 'SHA-512 (with rounds): ' . crypt('password-to-encrypt', '$6$rounds=1000$Yo
 Like Blowfish, the resulting hashes will contain the salt as part of the result hash.
 Conclusion
 
-As we can see, not all hashing functions are created equal. Tomorrow I’m going to discuss some additional techniques that can be applied while generating your password hashes regardless of which hashing function you choose to use.
+As we can see, not all hashing functions are created equal. Tomorrow Iï¿½m going to discuss some additional techniques that can be applied while generating your password hashes regardless of which hashing function you choose to use.
 */
 //print_r(crypt('password-to-encrypt', '$6$rounds=1000$YourSaltyStringz$'));
 
@@ -49,7 +64,8 @@ $hash	 = sha1($salt . $password);
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	</heaD>
 	<body>
-		<a class="btn btn-primary" href="Login.php" role="button">Login</a>
-		<a class="btn btn-secondary" href="register.php" role="button">Register</a>
+		<?php
+		$object->showButtons(1);
+		?>
 	</body>
 </html>
