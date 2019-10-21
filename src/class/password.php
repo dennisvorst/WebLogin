@@ -15,8 +15,6 @@ class Password
 	private $_salt = "MySaltyStringz";
 
 
-
-
 	function __construct()
 	{
 		$this->_hash = $this->_prefix . $this->_rounds . "$" . $this->_salt . "$";

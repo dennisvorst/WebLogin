@@ -20,7 +20,17 @@ class Account
 //		$this->_password = $password;
 	}
 
-	function doLogin(int $user_id) : int
+	function verify(string $username, string $password) : bool
+	{
+		$sql = "SELECT u.username, p.password FROM users u, passwords p WHERE u.id = p.user_id AND u.username = {$username} ORDER BY p.startdate desc LIMIT 1";
+		$result = $this->_db->queryDb($sql);
+
+		print_r($result);
+
+
+	}
+
+	function doLogin(int $user_id) : bool
 	{
 		if (!$this->isLoggedIn($user_id))
 		{
@@ -41,31 +51,19 @@ class Account
 	function isLoggedIn(int $user_id) : bool
 	{
 		/* if no records are found return false */
-		/* hasLoginExpired is better */
-
-
-		/* create a timestamp */
-		$now = new DateTime();
-		$now->format('Y-m-d H:i:s');    // MySQL datetime format
-
-		/* get the max value id */
-		$sql = "SELECT MAX(id) as max_id FROM logins WHERE logged_out IS NULL AND user_id = " . $user_id;
-		$max_id = $this->_db->queryDb($sql);
-		$max_id = $max_id[0]['max_id'];
+		$sql = "SELECT COUNT(*) AS total FROM logins WHERE logged_out IS NULL AND last_active > NOW() + INTERVAL {$this->_duration} MINUTE AND user_id = " . $user_id;
 
 		/* get the record */
-		$sql = "SELECT * FROM logins WHERE id = " . $max_id ;
-		$last_active = $this->_db->queryDb($sql);
-		$last_active = $last_active[0]['last_active'];
-
-		$last_active = new DateTime($last_active);
-		$last_active->modify("+" . $this->_duration . " minutes");
+		$total = $this->_db->queryDb($sql);
+		$total = $total[0]['total'];
 
 		/* if last active plus the expiration time still exceeds the current date time? return true*/
-		if ($last_active > $now)
+		if ($total > 0)
 		{
+			print_r("TRUE");
 			return true;
 		} else {
+			print_r("FALSE");
 			return false;
 		}
 	}
@@ -84,14 +82,19 @@ class Account
 
 	function doRegister(array $params)
 	{
+		print_r($params);
 		$username = $params['username'];
+		$password = $params['password'];
+
 		if (!$this->usernameExists($username)) 
 		{
 			$user_id = $this->_createUser($username);
-			$password_id = $this->_createAccount($user_id, $params['password']);
+			$password_id = $this->_createAccount($user_id, $password);
 		} else {
 			print_r("username exists<br>");
 		}
+
+		print_r($username);
 	}
 
 	private function _createUser(string $username) : int
@@ -119,7 +122,7 @@ class Account
 		?>
         <h2>Sign Up</h2>
         <p>Please fill this form to create an account.</p>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+        <form action="process.php" method="post">
             <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
                 <label>Username</label>
                 <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
@@ -139,7 +142,10 @@ class Account
                 <input type="submit" class="btn btn-primary" value="Submit">
                 <input type="reset" class="btn btn-default" value="Reset">
             </div>
-            <p>Already have an account? <a href="login.php">Login here</a>.</p>
+            <div class="form-group">
+				<input type="hiddden" name="action" value="doRegister">
+            </div>
+            <p>Already have an account? <a href="index.php?action=showLogin">Login here</a>.</p>
         </form>
 		<?php
 	}
@@ -149,7 +155,7 @@ class Account
 		?>
         <h2>Login</h2>
         <p>Please fill in your credentials to login.</p>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+        <form action="process.php" method="post">
             <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
                 <label>Username</label>
                 <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
@@ -163,25 +169,51 @@ class Account
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Login">
             </div>
-            <p>Don't have an account? <a href="register.php">Sign up now</a>.</p>
+            <p>Don't have an account? <a href="index.php?action=showRegister">Sign up now?</a>.</p>
+            <p><a href="index.php?action=showForgotPassword">Forgot your password?</a></p>
         </form>
 		<?php
 	}
 
 	function showForgotPassword()
 	{
+		?>
+        <h2>Forgot password</h2>
+        <p>Please enter a username or a valid emailaddress.</p>
+        <form action="process.php" method="post">
+            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+                <span class="help-block"><?php echo $username_err; ?></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Send">
+            </div>
+            <p>Don't have an account? <a href="index.php?action=showRegister">Sign up now?</a>.</p>
+        </form>
+		<?php
 	}
 
 	function sendConfirmationEmail()
 	{
 	}
 
-	function showResetPassword()
-	{
-	}
-
 	function showProperties()
 	{
+		?>
+        <h2>Properties</h2>
+        <p>Please enter a username or a valid emailaddress.</p>
+        <form action="process.php" method="post">
+            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
+                <span class="help-block"><?php echo $username_err; ?></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Send">
+            </div>
+        </form>
+		<?php
 	}
 
 	function showButtons(int $user_id) : void
@@ -189,13 +221,13 @@ class Account
 		if ($this->isLoggedIn($user_id))
 		{
 			?>
-			<a class="btn btn-primary" href="Login.php" role="button">Login</a>
-			<a class="btn btn-secondary" href="register.php" role="button">Register</a>
+			<a class="btn btn-primary" href="process.php?action=doLogout" role="button">Logout</a>
+			<a class="btn btn-secondary" href="index.php?action=showProperties" role="button">Properties</a>
 			<?php
 		} else {
 			?>
-			<a class="btn btn-primary" href="logout.php" role="button">Logout</a>
-			<a class="btn btn-secondary" href="roperties.php" role="button">Properties</a>
+			<a class="btn btn-primary" href="index.php?action=showLogin" role="button">Login</a>
+			<a class="btn btn-secondary" href="index.php?action=showRegister" role="button">Register</a>
 			<?php
 		}
 	}
