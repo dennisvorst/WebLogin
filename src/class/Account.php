@@ -29,37 +29,41 @@ class Account
 
 		if ($password != $result[0]['password'])
 		{
-			return False; 
-		} 
+			return False;
+		}
 		return True;
 	}
 
 	function doLogin(string $username, string $password) : bool
 	{
 		/** get the user_id */
-		$this->usr->getData($username);
+		$this->_usr->getData($username);
+		$user_id = $this->_usr->getId();
 
-		/** hash the password */
-		$password = $this->_pw->hashPassword($password);
-		
-		/** check if the password is valid and the user is not already logged in. */
-		if (!$this->isLoggedIn($this->_id) && $this->verify($this->_id, $password))
+		/** when an account is found */
+		if (!empty($user_id))
 		{
-			$sql = "INSERT INTO logins (id, user_id, start, last_active, logged_out, created_at) VALUES (NULL, " . $this->_id . ", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, CURRENT_TIMESTAMP);";
-			$this->_loginid = $this->_db->executeCommand($sql);
-			return True;
+			/** hash the password */
+			$password = $this->_pw->hashPassword($password);
+
+			/** check if the password is valid and the user is not already logged in. */
+			if (!$this->isLoggedIn($user_id) && $this->verify($user_id, $password))
+			{
+				$sql = "INSERT INTO logins (id, user_id, start, last_active, logged_out, created_at) VALUES (NULL, " . $user_id . ", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, CURRENT_TIMESTAMP);";
+				$this->_loginid = $this->_db->executeCommand($sql);
+				return True;
+			}
 		}
 		return False;
 	}
 
 
-	function doLogout(number $user_id)
+	function doLogout(int $user_id) : bool
 	{
-		$sql = "UPDATE logins SET logged_out = CURRENT_TIMESTAMP WHERE id = $user_id AND logged_out IS NULL";
-//		$result = $this->_db->queryDb($sql);
+		$sql = "UPDATE logins SET logged_out = CURRENT_TIMESTAMP WHERE user_id = $user_id AND logged_out IS NULL";
+		$this->_db->updatedb($sql);
 
-
-		print_r($sql);
+		return true;
 	}
 
 	function isLoggedIn(int $user_id) : bool
@@ -74,17 +78,15 @@ class Account
 		/* if last active plus the expiration time still exceeds the current date time? return true*/
 		if ($total > 0)
 		{
-			return true;
-		} else {
-			return false;
+			return True;
 		}
+		return False;
 	}
 
 	function usernameExists(string $username) : bool
 	{
 		/** check if the username is unique */
 		$sql = "SELECT count(*) as total FROM users WHERE username = '" . $username . "'";
-		print_r($sql . "<br>");
 		$result = $this->_db->queryDb($sql);
 		if ($result[0]['total'] > 0)
 		{
@@ -109,7 +111,7 @@ class Account
 		} else {
 			/** check for uniqueness. */
 		}
-		if (!$this->usernameExists($username)) 
+		if (!$this->usernameExists($username))
 		{
 			/** invalid emailaddress */
 			$errors['username_err'] = "Username is already in use.";
@@ -118,9 +120,9 @@ class Account
 		{
 			/** invalid emailaddress */
 			$errors['password_err'] = "The confirmation password differs from the password.";
-		} 
+		}
 
-		if (!empty($errors)) 
+		if (!empty($errors))
 		{
 			return False;
 		}
@@ -134,9 +136,9 @@ class Account
 	private function _createAccount(int $user_id, string $password) : int
 	{
 		$password = $this->_pw->hashPassword($password);
-		
+
 		$sql = "INSERT INTO passwords (id, user_id, password, startdate, created_at) VALUES (NULL, '" . $user_id . "', '" . $password . "', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);";
-		
+
 		$id = $this->_db->insertRecord($sql);
 
 		return $id;
@@ -162,13 +164,13 @@ class Account
                 <label>Username</label>
                 <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
                 <span class="help-block"><?php echo $username_err; ?></span>
-            </div>    
+            </div>
 			<!-- email -->
             <div class="form-group <?php echo (!empty($email_err)) ? 'has-error' : ''; ?>">
                 <label>Email address</label>
                 <input type="text" name="email" class="form-control" value="<?php echo $email; ?>">
                 <span class="help-block"><?php echo $email_err; ?></span>
-            </div>    
+            </div>
 			<!-- password -->
             <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
                 <label>Password</label>
@@ -276,7 +278,7 @@ class Account
 			{
 				return True;
 			}
-		} 
+		}
 		return False;
 	}
 
@@ -302,9 +304,9 @@ class Account
 		<?php
 	}
 
-	function showButtons(int $user_id) : void
+	function showButtons(bool $isLoggedIn = false) : void
 	{
-		if ($this->isLoggedIn($user_id))
+		if ($isLoggedIn)
 		{
 			?>
 			<a class="btn btn-primary" href="process.php?action=doLogout" role="button">Logout</a>
@@ -316,5 +318,10 @@ class Account
 			<a class="btn btn-secondary" href="index.php?action=showRegister" role="button">Register</a>
 			<?php
 		}
+	}
+
+	function getUserId() : int
+	{
+		return $this->_usr->getId();
 	}
 }

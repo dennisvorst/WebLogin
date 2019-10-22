@@ -21,12 +21,14 @@ class User
 			/** make sure it is not an email address */
 			if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
 				/** valid email address */
-				$sql = "SELECT * FROM users WHERE email = '{$email}'";
+				$sql = "SELECT * FROM users WHERE email = '{$username}'";
 			} else {
 				/** invalid emailaddress */
 				$sql = "SELECT * FROM users WHERE username = '{$username}'";
 			}
+		 
 			$result = $this->_db->queryDb($sql);
+
 			$this->_id = $result[0]['id'];
 			$this->_username = $result[0]['username'];
 			$this->_email = $result[0]['email'];

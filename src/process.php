@@ -3,10 +3,8 @@ require_once "class/Account.php";
 
 session_start();
 
-
 if (!empty($_POST))
 {
-//    print_r($_POST);
     $keys = array_keys($_POST);
     foreach ($keys as $key)
     {
@@ -14,7 +12,6 @@ if (!empty($_POST))
     }
 } elseif (!empty($_GET))
 {
-//    print_r($_GET);
     $keys = array_keys($_GET);
     foreach ($keys as $key)
     {
@@ -22,10 +19,7 @@ if (!empty($_POST))
     }
 }
 
-//print_r($keys);
-
 $object = new Account();
-$user_id = 1;
 
 if (isset($action))
 {
@@ -34,19 +28,23 @@ if (isset($action))
         case "doLogout" :
             /* get the user_id from the session */
             /* logout the user */
-            if ($object->doLogout($user_id))
+            if (!isset($_SESSION['userId']) || $object->doLogout($_SESSION['userId']))
             {
                 $_SESSION['message'] = "Logout successful";
-            } else {
-                $_SESSION['message'] = "Logout failed";
+                $_SESSION['isLoggedIn'] = False;
+                unset($_SESSION['userId']);
+                unset($_SESSION['lastActive']);
+
+                print_r($_SESSION);
             }
             break;
         case "doLogin" :
             if ($object->doLogin($_POST['username'], $_POST['password']))
             {
                 $_SESSION['message'] = "Login successful";
-            } else {
-                $_SESSION['message'] = "Login failed";
+                $_SESSION['isLoggedIn'] = True;
+                $_SESSION['userId'] = $object->getUserId();
+                $_SESSION['lastActive'] = date('Y-m-d H:i:s');
             }
             break;
         case "doRegister" :

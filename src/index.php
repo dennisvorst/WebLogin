@@ -20,24 +20,34 @@ $object = new Account();
 	</heaD>
 	<body>
 		<?php
-		$object->showButtons(1);
+		$object->showButtons((key_exists('userId', $_SESSION) ? $_SESSION['userId'] : 0));
 
 		switch ($action)
 		{
-			case "showForgotPassword" : 
-			case "showLogin" : 
+			case "showForgotPassword" :
+			case "showLogin" :
 			case "showProperties" :
-			case "showRegister" : 
+			case "showRegister" :
 				echo $object->{$action}();
 				break;
-			case "forgot_password" : 
+			case "forgot_password" :
 				echo $object->showForgotPassword();
 				break;
 			default :
-				echo $_SESSION['message'];
+				if (key_exists("message", $_SESSION))
+				{
+					echo $_SESSION['message'];
+				}
 				break;
 		}
-		unset($_SESSION);
 		?>
 	</body>
 </html>
+
+<?php
+	/** unset the Session variables */
+	unset($_SESSION['message']);
+	unset($_SESSION['errors']);
+	unset($_SESSION['userId']);
+
+?>
