@@ -4,6 +4,8 @@ require_once "class/user.php";
 //require_once "class/login.php";
 require_once "class/account.php";
 
+session_start();
+
 $action = "";
 if(isset($_GET['action']))
 {
@@ -32,8 +34,10 @@ $object = new Account();
 				echo $object->showForgotPassword();
 				break;
 			default :
+				echo $_SESSION['message'];
 				break;
 		}
+		unset($_SESSION);
 		?>
 	</body>
 </html>

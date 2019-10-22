@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -30,6 +31,3 @@ CREATE TABLE logins (
         REFERENCES users(id)
         ON DELETE CASCADE
 );
-
-INSERT INTO `users` (`id`, `username`, `created_at`) VALUES (NULL, 'a4dvo', CURRENT_TIMESTAMP);
-INSERT INTO `passwords` (`id`, `user_id`, `password`, `startdate`, `created_at`) VALUES ('1', '1', 'Museum714', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

@@ -1,6 +1,8 @@
 <?php
-
 require_once "class/Account.php";
+
+session_start();
+
 
 if (!empty($_POST))
 {
@@ -32,19 +34,35 @@ if (isset($action))
         case "doLogout" :
             /* get the user_id from the session */
             /* logout the user */
-            $object->doLogout($user_id);
+            if ($object->doLogout($user_id))
+            {
+                $_SESSION['message'] = "Logout successful";
+            } else {
+                $_SESSION['message'] = "Logout failed";
+            }
             break;
         case "doLogin" :
-            /** verify the user and password combination */
-
-            /** if correct create a succesful login record */
-
-            /** if not create a false login record */
+            if ($object->doLogin($_POST['username'], $_POST['password']))
+            {
+                $_SESSION['message'] = "Login successful";
+            } else {
+                $_SESSION['message'] = "Login failed";
+            }
             break;
         case "doRegister" :
-            $object->doRegister($_POST);
+            if ($object->doRegister($_POST))
+            {
+                $_SESSION['message'] = "Your registration was successful.";
+            } else {
+                $_SESSION['message'] = "There was an error processing Your registration.";
+            }
+            break;
+        case "sendPassword" :
+            if ($object->sendPassword($_POST['username']))
+            {
 
-
+                $_SESSION['message'] = "If the email address or username provided by you was in our system an email was sent to you.";
+            }
 
             break;
         default :
@@ -52,5 +70,5 @@ if (isset($action))
     }
 }
 
-//header("Location: index.php");
-//die();
+header("Location: index.php");
+die();
