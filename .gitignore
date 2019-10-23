@@ -2,3 +2,5 @@
 vendor/
 composer.lock
 .phpunit.result.cache
+src/class/Database.php
+src/config.php
