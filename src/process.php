@@ -25,19 +25,6 @@ if (isset($action))
 {
     switch ($action)
     {
-        case "doLogout" :
-            /* get the user_id from the session */
-            /* logout the user */
-            if (!isset($_SESSION['userId']) || $object->doLogout($_SESSION['userId']))
-            {
-                $_SESSION['message'] = "Logout successful";
-                $_SESSION['isLoggedIn'] = False;
-                unset($_SESSION['userId']);
-                unset($_SESSION['lastActive']);
-
-                print_r($_SESSION);
-            }
-            break;
         case "doLogin" :
             if ($object->doLogin($_POST['username'], $_POST['password']))
             {
@@ -47,6 +34,19 @@ if (isset($action))
                 $_SESSION['lastActive'] = date('Y-m-d H:i:s');
             }
             break;
+
+        case "doLogout" :
+            /* get the user_id from the session */
+            /* logout the user */
+            if (!isset($_SESSION['userId']) || $object->doLogout($_SESSION['userId']))
+            {
+                $_SESSION['message'] = "Logout successful";
+                $_SESSION['isLoggedIn'] = False;
+                unset($_SESSION['userId']);
+                unset($_SESSION['lastActive']);
+            }
+            break;
+
         case "doRegister" :
             if ($object->doRegister($_POST))
             {
@@ -55,14 +55,29 @@ if (isset($action))
                 $_SESSION['message'] = "There was an error processing Your registration.";
             }
             break;
+
         case "sendPassword" :
             if ($object->sendPassword($_POST['username']))
             {
 
                 $_SESSION['message'] = "If the email address or username provided by you was in our system an email was sent to you.";
             }
-
             break;
+
+        case "deleteAccount" : 
+            if ($object->deleteAccount($_POST['userId']))
+            {
+                
+            }
+            break;
+
+        case "updateAccount" : 
+            if ($object->deleteAccount($_POST['userId']))
+            {
+                
+            }
+            break;
+
         default :
             break;
     }

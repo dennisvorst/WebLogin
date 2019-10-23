@@ -6,6 +6,17 @@ require_once "User.php";
 class Account
 {
 	private $_password;
+	private $_confirm_password;
+	private $_username;
+	private $_email;
+	private $_user_id;
+
+	private $_username_err = "";
+	private $_email_err = "";
+	private $_password_err = "";
+	private $_confirm_password_err = "";
+
+	private $_errors = [];
 
 	private $_duration = 30;
 
@@ -15,11 +26,36 @@ class Account
 
 	private $_organisation = "Honkbalmuseum.nl";
 
-	function __construct()
+	function __construct(int $user_id = null)
 	{
-		$this->_db = new DataBase();
+//		$this->_db = new DataBase();
 		$this->_pw = new Password();
-		$this->_usr = new User($this->_db);
+//		$this->_usr = new User($this->_db);
+
+		if (!empty($user_id)) 
+		{
+			$this->_usr->getUserById($user_id);
+			$this->_username = $this->_usr->getUsername();
+			$this->_email = $this->_usr->getEmail();
+			$this->_user_id = $user_id;
+		}
+	}
+
+	function stillActive(DateTime $lastActive = null) : bool
+	{
+
+		if (!empty($lastActive))
+		{
+			$now = new DateTime();
+			$then = new DateTime();
+			$then->sub(new DateInterval("PT" . ($this->_duration) . "M"));
+
+			if ($lastActive >= $then && $lastActive <= $now)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	function verify(string $id, string $password) : bool
@@ -37,7 +73,7 @@ class Account
 	function doLogin(string $username, string $password) : bool
 	{
 		/** get the user_id */
-		$this->_usr->getData($username);
+		$this->_usr->getUserByName($username);
 		$user_id = $this->_usr->getId();
 
 		/** when an account is found */
@@ -56,7 +92,6 @@ class Account
 		}
 		return False;
 	}
-
 
 	function doLogout(int $user_id) : bool
 	{
@@ -107,22 +142,22 @@ class Account
 		/** make sure it is not an email address */
 		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 			/** invalid emailaddress */
-			$errors['email_err'] = "This is not a valid email address.";
+			$this->_errors['email_err'] = "This is not a valid email address.";
 		} else {
 			/** check for uniqueness. */
 		}
 		if (!$this->usernameExists($username))
 		{
 			/** invalid emailaddress */
-			$errors['username_err'] = "Username is already in use.";
+			$this->_errors['username_err'] = "Username is already in use.";
 		}
 		if ($password != $confirm_password)
 		{
 			/** invalid emailaddress */
-			$errors['password_err'] = "The confirmation password differs from the password.";
+			$this->_errors['password_err'] = "The confirmation password differs from the password.";
 		}
 
-		if (!empty($errors))
+		if (!empty($this->_errors))
 		{
 			return False;
 		}
@@ -159,30 +194,9 @@ class Account
         <h2>Sign Up</h2>
         <p>Please fill this form to create an account.</p>
         <form action="process.php" method="post">
-			<!-- username -->
-            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
-                <label>Username</label>
-                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
-                <span class="help-block"><?php echo $username_err; ?></span>
-            </div>
-			<!-- email -->
-            <div class="form-group <?php echo (!empty($email_err)) ? 'has-error' : ''; ?>">
-                <label>Email address</label>
-                <input type="text" name="email" class="form-control" value="<?php echo $email; ?>">
-                <span class="help-block"><?php echo $email_err; ?></span>
-            </div>
-			<!-- password -->
-            <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
-                <label>Password</label>
-                <input type="password" name="password" class="form-control" value="<?php echo $password; ?>">
-                <span class="help-block"><?php echo $password_err; ?></span>
-            </div>
-			<!-- confirm password -->
-            <div class="form-group <?php echo (!empty($confirm_password_err)) ? 'has-error' : ''; ?>">
-                <label>Confirm Password</label>
-                <input type="password" name="confirm_password" class="form-control" value="<?php echo $confirm_password; ?>">
-                <span class="help-block"><?php echo $confirm_password_err; ?></span>
-            </div>
+			<?php 
+			$this->_getFields();
+			?>
 			<!-- buttons -->
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Submit">
@@ -212,16 +226,16 @@ class Account
         <p>Please fill in your credentials to login.</p>
         <form action="process.php" method="post">
 			<!-- username or email -->
-            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+            <div class="form-group <?php echo (!empty($this->_username_err)) ? 'has-error' : ''; ?>">
                 <label>Username</label>
-                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
-                <span class="help-block"><?php echo $username_err; ?></span>
+                <input type="text" name="username" class="form-control" value="<?php echo $this->_username; ?>">
+                <span class="help-block"><?php echo $this->_username_err; ?></span>
             </div>
 			<!-- password -->
-            <div class="form-group <?php echo (!empty($password_err)) ? 'has-error' : ''; ?>">
+            <div class="form-group <?php echo (!empty($this->_password_err)) ? 'has-error' : ''; ?>">
                 <label>Password</label>
                 <input type="password" name="password" class="form-control">
-                <span class="help-block"><?php echo $password_err; ?></span>
+                <span class="help-block"><?php echo $this->_password_err; ?></span>
             </div>
 			<!-- buttons -->
             <div class="form-group">
@@ -247,10 +261,10 @@ class Account
         <p>Please enter a username or a valid emailaddress.</p>
         <form action="process.php" method="post">
 			<!-- username or email -->
-            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
+            <div class="form-group <?php echo (!empty($this->_username_err)) ? 'has-error' : ''; ?>">
                 <label>Username</label>
-                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
-                <span class="help-block"><?php echo $username_err; ?></span>
+                <input type="text" name="username" class="form-control" value="<?php echo $this->_username; ?>">
+                <span class="help-block"><?php echo $this->_username_err; ?></span>
             </div>
 			<!-- buttons -->
             <div class="form-group">
@@ -267,7 +281,7 @@ class Account
 
 	function sendPassword(string $username) : bool
 	{
-		$this->_usr->getData($username);
+		$this->_usr->getUserByName($username);
 		$email = $this->_usr->getEmail();
 		$username = $this->_usr->getUsername();
 
@@ -286,21 +300,34 @@ class Account
 	{
 	}
 
-	function showProperties()
+	function showProperties(int $user_id)
 	{
 		?>
         <h2>Properties</h2>
-        <p>Please enter a username or a valid emailaddress.</p>
+        <p>Make changes to your account.</p>
         <form action="process.php" method="post">
-            <div class="form-group <?php echo (!empty($username_err)) ? 'has-error' : ''; ?>">
-                <label>Username</label>
-                <input type="text" name="username" class="form-control" value="<?php echo $username; ?>">
-                <span class="help-block"><?php echo $username_err; ?></span>
-            </div>
+			<?php 
+			$this->_getFields();
+			?>
+			<!-- buttons-->
             <div class="form-group">
-                <input type="submit" class="btn btn-primary" value="Send">
+                <input type="submit" class="btn btn-primary" value="Update Acoount">
+            </div>
+			<!-- hidden -->
+            <div class="form-group">
+				<input type="hidden" name="action" value="updateAccount">
             </div>
         </form>
+        <form action="process.php" method="post">
+			<!-- buttons-->
+            <div class="form-group">
+                <input type="submit" class="btn btn-danger" value="Delete Account">
+            </div>
+			<!-- hidden -->
+            <div class="form-group">
+				<input type="hidden" name="action" value="deleteAccount">
+            </div>
+		</form>
 		<?php
 	}
 
@@ -323,5 +350,47 @@ class Account
 	function getUserId() : int
 	{
 		return $this->_usr->getId();
+	}
+
+	function getDuration()
+	{
+		return $this->_duration;
+	}
+
+	function deleteAccount(int $id) : bool
+	{
+		$sql = "DELETE FROM users WHERE id = {$id}";
+		$this->_db->updateDb($sql);
+		return true;
+	}
+
+	private function _getFields() : void
+	{
+		?>
+		<!-- username -->
+		<div class="form-group <?php echo (!empty($this->_username_err)) ? 'has-error' : ''; ?>">
+			<label>Username</label>
+			<input type="text" name="username" class="form-control" value="<?php echo $this->_username; ?>">
+			<span class="help-block"><?php echo $this->_username_err; ?></span>
+		</div>
+		<!-- email -->
+		<div class="form-group <?php echo (!empty($this->_email_err)) ? 'has-error' : ''; ?>">
+			<label>Email address</label>
+			<input type="text" name="email" class="form-control" value="<?php echo $this->_email; ?>">
+			<span class="help-block"><?php echo $this->_email_err; ?></span>
+		</div>
+		<!-- password -->
+		<div class="form-group <?php echo (!empty($this->_password_err)) ? 'has-error' : ''; ?>">
+			<label>Password</label>
+			<input type="password" name="password" class="form-control" value="<?php echo $this->_password; ?>">
+			<span class="help-block"><?php echo $this->_password_err; ?></span>
+		</div>
+		<!-- confirm password -->
+		<div class="form-group <?php echo (!empty($this->_confirm_password_err)) ? 'has-error' : ''; ?>">
+			<label>Confirm Password</label>
+			<input type="password" name="confirm_password" class="form-control" value="<?php echo $this->_confirm_password; ?>">
+			<span class="help-block"><?php echo $this->_confirm_password_err; ?></span>
+		</div>
+		<?php
 	}
 }

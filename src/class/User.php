@@ -9,12 +9,17 @@ class User
 
 	private $_db;
 
-	function __construct(Database $db)
+	function __construct(Database $db, int $user_id = null)
 	{
 		$this->_db = $db;
+
+		if (!empty($user_id))
+		{
+			$this->getUserById();
+		}
 	}
 
-	function getData(string $username) : void
+	function getUserByName(string $username) : void
 	{
 		if (empty($this->_id))
 		{
@@ -34,6 +39,22 @@ class User
 			$this->_email = $result[0]['email'];
 		} 
 	}
+
+	function getUserById(int $user_id) : void
+	{
+		if (empty($this->_id))
+		{
+			$sql = "SELECT * FROM users WHERE id = '{$user_id}'";
+		 
+			$result = $this->_db->queryDb($sql);
+
+			$this->_id = $result[0]['id'];
+			$this->_username = $result[0]['username'];
+			$this->_email = $result[0]['email'];
+		} 
+	}
+
+
 
 	function create(string $username, string $email) : int
 	{
