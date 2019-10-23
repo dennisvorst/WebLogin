@@ -3,6 +3,7 @@ require_once "class/Account.php";
 
 session_start();
 
+/** transfer the posted values */
 if (!empty($_POST))
 {
     $keys = array_keys($_POST);
@@ -19,6 +20,8 @@ if (!empty($_POST))
     }
 }
 
+/** init */
+$query = "";
 $object = new Account();
 
 if (isset($action))
@@ -31,7 +34,7 @@ if (isset($action))
                 $_SESSION['message'] = "Login successful";
                 $_SESSION['isLoggedIn'] = True;
                 $_SESSION['userId'] = $object->getUserId();
-                $_SESSION['lastActive'] = date('Y-m-d H:i:s');
+                $_SESSION['lastActive'] = new DateTime();
             }
             break;
 
@@ -41,7 +44,7 @@ if (isset($action))
             if (!isset($_SESSION['userId']) || $object->doLogout($_SESSION['userId']))
             {
                 $_SESSION['message'] = "Logout successful";
-                $_SESSION['isLoggedIn'] = False;
+                unset($_SESSION['isLoggedIn']);
                 unset($_SESSION['userId']);
                 unset($_SESSION['lastActive']);
             }
@@ -52,7 +55,8 @@ if (isset($action))
             {
                 $_SESSION['message'] = "Your registration was successful.";
             } else {
-                $_SESSION['message'] = "There was an error processing Your registration.";
+                $_SESSION['message'] = "There was an error processing your registration.";
+                $_SESSION['errors'] = $object->getErrors();
             }
             break;
 
@@ -64,18 +68,24 @@ if (isset($action))
             }
             break;
 
-        case "deleteAccount" : 
-            if ($object->deleteAccount($_POST['userId']))
+        case "deleteAccount" :
+            if ($object->deleteAccount($_SESSION['userId']))
             {
-                
+                $_SESSION['message'] = "Deletion of your account was successful";
+                unset($_SESSION['isLoggedIn']);
+                unset($_SESSION['userId']);
+                unset($_SESSION['lastActive']);
             }
             break;
 
-        case "updateAccount" : 
-            if ($object->deleteAccount($_POST['userId']))
-            {
-                
-            }
+        case "updateAccount":
+            $_SESSION['message'] = "Your account was updated.";
+            $query = "?action=showProperties";
+
+            print_r($_POST);
+            break;
+
+        case "updateAccount" :
             break;
 
         default :
@@ -83,5 +93,5 @@ if (isset($action))
     }
 }
 
-header("Location: index.php");
+header("Location: index.php" . $query);
 die();

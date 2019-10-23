@@ -28,11 +28,11 @@ class Account
 
 	function __construct(int $user_id = null)
 	{
-//		$this->_db = new DataBase();
+		$this->_db = new DataBase();
 		$this->_pw = new Password();
-//		$this->_usr = new User($this->_db);
+		$this->_usr = new User($this->_db);
 
-		if (!empty($user_id)) 
+		if (!empty($user_id))
 		{
 			$this->_usr->getUserById($user_id);
 			$this->_username = $this->_usr->getUsername();
@@ -98,6 +98,12 @@ class Account
 		$sql = "UPDATE logins SET logged_out = CURRENT_TIMESTAMP WHERE user_id = $user_id AND logged_out IS NULL";
 		$this->_db->updatedb($sql);
 
+		$_SESSION['message'] = "Logout successful";
+		$_SESSION['isLoggedIn'] = False;
+		unset($_SESSION['userId']);
+		unset($_SESSION['lastActive']);
+
+
 		return true;
 	}
 
@@ -120,18 +126,26 @@ class Account
 
 	function usernameExists(string $username) : bool
 	{
+		error_log("** Account::usernameExists **");
+
 		/** check if the username is unique */
 		$sql = "SELECT count(*) as total FROM users WHERE username = '" . $username . "'";
+		error_log("Account::usernameExists: " . $sql);
+
 		$result = $this->_db->queryDb($sql);
 		if ($result[0]['total'] > 0)
 		{
+			error_log("Account::usernameExists: True");
 			return true;
 		}
+		error_log("Account::usernameExists: False");
 		return false;
 	}
 
 	function doRegister(array $params) : bool
 	{
+		error_log("** Account::doRegister **");
+
 		/** init */
 		$errors = [];
 		$username = $params['username'];
@@ -146,11 +160,13 @@ class Account
 		} else {
 			/** check for uniqueness. */
 		}
-		if (!$this->usernameExists($username))
+
+		if ($this->usernameExists($username))
 		{
 			/** invalid emailaddress */
 			$this->_errors['username_err'] = "Username is already in use.";
 		}
+
 		if ($password != $confirm_password)
 		{
 			/** invalid emailaddress */
@@ -159,12 +175,16 @@ class Account
 
 		if (!empty($this->_errors))
 		{
+			error_log("Account::doRegister: \$this->_errors = [" . implode(", ", $this->_errors) . "]");
+			error_log("Account::doRegister: False");
+			
 			return False;
 		}
 
 		/** process */
 		$user_id = $this->_usr->create($username, $email);
 		$password_id = $this->_createAccount($user_id, $password);
+		error_log("Account::doRegister True");
 		return true;
 	}
 
@@ -194,7 +214,7 @@ class Account
         <h2>Sign Up</h2>
         <p>Please fill this form to create an account.</p>
         <form action="process.php" method="post">
-			<?php 
+			<?php
 			$this->_getFields();
 			?>
 			<!-- buttons -->
@@ -306,7 +326,7 @@ class Account
         <h2>Properties</h2>
         <p>Make changes to your account.</p>
         <form action="process.php" method="post">
-			<?php 
+			<?php
 			$this->_getFields();
 			?>
 			<!-- buttons-->
@@ -362,6 +382,11 @@ class Account
 		$sql = "DELETE FROM users WHERE id = {$id}";
 		$this->_db->updateDb($sql);
 		return true;
+	}
+
+	function getErrors()
+	{
+		return $this->_errors;
 	}
 
 	private function _getFields() : void

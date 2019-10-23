@@ -10,6 +10,7 @@ class AccountTest extends TestCase
 		$this->assertTrue(class_exists("Account"));
 	}
 
+	/** stillActive tests */
 	public function testStillActiveSucceedsBecauseLastActiveIsBetweenNowAndThen()
 	{
 		/** The last active date is in between then and now */
