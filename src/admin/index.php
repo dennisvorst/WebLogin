@@ -1,3 +1,7 @@
+<?php
+require_once "class/LoginForm.php";
+?>
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -16,17 +20,15 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-
-    <!-- font awesome -->
-    <script src="https://kit.fontawesome.com/af1eec186a.js"></script>
   </head>
   <body>
 
     <div class="container">
-      <a href="admin/index.php" class="btn btn-default btn-large">
-        <i class="far fa-user center"></i><br>
-        Login
-      </a>
+        <?php
+        $loginForm = new LoginForm();
+        echo $loginForm->showLogin();
+        ?>
+
     </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
