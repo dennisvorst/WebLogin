@@ -4,6 +4,6 @@
         "psr-0": { "\\": "src/class/" } 
     },
     "require-dev": {
-        "phpunit/phpunit": "^8"
+        "phpunit/phpunit": "^9"
     }
 }
